@@ -28,7 +28,7 @@ function Header({ isSidebarOpen, onToggleSidebar, modelo }: HeaderProps) {
         <span />
       </button>
       {/* O wordmark do v3 já traz o nome desenhado, então ele é a marca inteira
-          — o mascote separado e o texto "MEJ IA" saíram do design (node 85:3832
+          — o mascote separado e o texto "Chat Inova" saíram do design (node 85:3832
           / 85:4106). O alt carrega o nome para quem usa leitor de tela. */}
       <div className="header__brand">
         <img src={wordmark} alt={wordmarkAlt} className="header__wordmark-img" />

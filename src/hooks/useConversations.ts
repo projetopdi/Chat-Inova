@@ -207,7 +207,7 @@ function createInitialState(): AppState {
   }
 }
 
-const ERRO_REDE = 'Não foi possível conectar ao servidor da MEJ IA. Verifique sua conexão e tente novamente.'
+const ERRO_REDE = 'Não foi possível conectar ao servidor do Chat Inova. Verifique sua conexão e tente novamente.'
 const ERRO_GENERICO = 'Não foi possível obter a resposta. Tente novamente.'
 
 /**
@@ -228,7 +228,7 @@ function logDetalheEmDev(contexto: string, error: unknown): void {
   // import.meta.env.DEV é substituído por false no build, então o minificador
   // remove este bloco inteiro da produção (§7.5).
   if (import.meta.env.DEV) {
-    console.error(`[MEJ IA] ${contexto}`, error)
+    console.error(`[Chat Inova] ${contexto}`, error)
   }
 }
 

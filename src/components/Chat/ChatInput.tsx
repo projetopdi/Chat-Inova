@@ -49,8 +49,8 @@ function ChatInput({ conversation }: ChatInputProps) {
       <textarea
         ref={textareaRef}
         className="chat-input__textarea"
-        placeholder="Pergunta para o MEJ IA"
-        aria-label="Pergunta para o MEJ IA"
+        placeholder="Pergunta para o Chat Inova"
+        aria-label="Pergunta para o Chat Inova"
         rows={1}
         maxLength={MAX_INPUT_LENGTH}
         value={conversation.draft}

@@ -63,7 +63,7 @@ export function ehModelo(valor: unknown): valor is Modelo {
 export function normalizarModelo(valor: unknown): Modelo {
   if (ehModelo(valor)) return valor
   if (import.meta.env.DEV) {
-    console.warn(`[MEJ IA] modelo inválido (${String(valor)}); usando "${MODELO_PADRAO}"`)
+    console.warn(`[Chat Inova] modelo inválido (${String(valor)}); usando "${MODELO_PADRAO}"`)
   }
   return MODELO_PADRAO
 }

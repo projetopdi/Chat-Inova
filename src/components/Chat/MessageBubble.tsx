@@ -20,7 +20,7 @@ function MessageBubble({ message, conversationId, retryQuestion }: MessageBubble
     <div className={`message-bubble message-bubble--${message.role}`}>
       <div className="message-bubble__content">
         {isTyping ? (
-          <div className="message-bubble__typing" aria-label="MEJ IA está digitando">
+          <div className="message-bubble__typing" aria-label="Chat Inova está digitando">
             <span />
             <span />
             <span />

@@ -18,7 +18,7 @@ const SAFE_PROTOCOLS = ['http:', 'https:', 'mailto:']
  */
 function safeUrl(url: string): string {
   try {
-    const parsed = new URL(url, 'https://mej-ia.invalid/')
+    const parsed = new URL(url, 'https://chatinova.invalid/')
     return SAFE_PROTOCOLS.includes(parsed.protocol) ? url : ''
   } catch {
     return ''

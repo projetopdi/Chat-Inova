@@ -1,6 +1,6 @@
-# MEJ IA — Interface
+# Chat Inova — Interface
 
-Interface web da MEJ IA, assistente treinado com informações da Universidade
+Interface web do Chat Inova, assistente treinado com informações da Universidade
 Federal do Ceará para responder dúvidas sobre o Movimento Empresa Júnior.
 
 React + TypeScript + Vite, CSS puro com tokens extraídos do Figma.
