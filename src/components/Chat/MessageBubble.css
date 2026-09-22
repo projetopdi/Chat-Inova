@@ -102,3 +102,10 @@
   outline: 2px solid var(--color-brand-purple-strong);
   outline-offset: 2px;
 }
+
+.message-bubble__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  align-self: flex-start;
+}

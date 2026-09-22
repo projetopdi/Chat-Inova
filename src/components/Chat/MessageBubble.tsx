@@ -4,6 +4,8 @@ import MarkdownMessage from './MarkdownMessage'
 import CopyButton from './CopyButton'
 import './MessageBubble.css'
 
+import MessageFeedback from './MessageFeedback'
+
 interface MessageBubbleProps {
   message: Message
   conversationId: string
@@ -47,7 +49,12 @@ function MessageBubble({ message, conversationId, retryQuestion }: MessageBubble
         )}
       </div>
 
-      {canCopy && <CopyButton text={message.content} />}
+      {canCopy && (
+        <div className="message-bubble__actions">
+          <CopyButton text={message.content} />
+          <MessageFeedback />
+        </div>
+      )}
     </div>
   )
 }
