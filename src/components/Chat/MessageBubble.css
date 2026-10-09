@@ -2,34 +2,51 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-width: 78%;
 }
 
+/* --- Mensagem do Usuário --- */
 .message-bubble--user {
   align-self: flex-end;
   align-items: flex-end;
+  max-width: 75%;
+  width: fit-content;
 }
 
+.message-bubble--user .message-bubble__content {
+  background: var(--color-surface-alt);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px 14px 4px 14px;
+  padding: 14px 18px;
+}
+
+/* --- Mensagem da IA --- */
 .message-bubble--assistant {
   align-self: flex-start;
   align-items: flex-start;
+  max-width: 90%;
+  width: 100%;
 }
 
-.message-bubble__content {
+.message-bubble--assistant .message-bubble__content {
   background: var(--color-surface);
-  border-radius: var(--radius-sm);
-  padding: 17px 14px;
+  border-left: 3px solid var(--cor-primaria, var(--color-brand-purple-strong));
+  border-radius: 4px var(--radius-sm) var(--radius-sm) 4px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+/* Base do conteúdo da bolha */
+.message-bubble__content {
   font-family: var(--font-body);
   font-size: var(--font-size-body);
   color: var(--color-text-primary);
-  white-space: pre-wrap;
   word-break: break-word;
-  width: 100%;
   box-sizing: border-box;
 }
 
 .message-bubble__text {
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .message-bubble__typing {
@@ -68,10 +85,7 @@
   }
 }
 
-/* §7.4. Este é o indicador que fica mais tempo na tela — a resposta leva de 8
-   a 13 segundos para começar a chegar —, então respeitar a preferência aqui
-   importa mais do que em qualquer outra animação. Os pontos ficam parados mas
-   visíveis: continua comunicando "estou processando". */
+/* §7.4. Indicador de processamento para prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .message-bubble__typing span {
     animation: none;
@@ -91,7 +105,7 @@
 .message-bubble__retry {
   border: none;
   background: none;
-  color: var(--color-brand-purple-strong);
+  color: var(--cor-primaria, var(--color-brand-purple-strong));
   text-decoration: underline;
   cursor: pointer;
   font: inherit;
@@ -99,7 +113,7 @@
 }
 
 .message-bubble__retry:focus-visible {
-  outline: 2px solid var(--color-brand-purple-strong);
+  outline: 2px solid var(--cor-primaria, var(--color-brand-purple-strong));
   outline-offset: 2px;
 }
 
@@ -108,4 +122,5 @@
   align-items: center;
   gap: 12px;
   align-self: flex-start;
+  padding-left: 4px;
 }
