@@ -6,7 +6,7 @@ import type { Modelo } from './modelos'
  * Assets que trocam com o modelo (PRD v3 §2.2).
  *
  * Mapa tipado, nunca concatenação de string em caminho de arquivo: o `import`
- * é o que faz o Vite reescrever o caminho para o subdiretório do GitHub Pages
+ * é o que faz o Vite reescrever o caminho para o subdiretório /MEJ-AI-INTERFACE/
  * (§6.2 do v2), e um caminho montado em runtime quebraria em produção.
  *
  * A verificação byte a byte da Etapa 3 mostrou que o wordmark é o ÚNICO asset

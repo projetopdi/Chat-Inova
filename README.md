@@ -26,7 +26,8 @@ Só existe uma, `VITE_API_URL`:
 
 - **Desenvolvimento:** `/api` — usa o proxy definido no `vite.config.ts`, que
   encaminha para o backend e evita CORS na máquina local.
-- **Produção:** a URL absoluta, injetada pelo GitHub Actions no momento do build.
+- **Produção:** a URL absoluta, passada via `--build-arg` no build da imagem
+  Docker (ver abaixo).
 
 > ⚠️ Toda variável com prefixo `VITE_` é **embutida no bundle** e fica visível no
 > DevTools de qualquer visitante. Nunca coloque chave, token ou credencial ali.
@@ -61,8 +62,8 @@ docker compose up --build
 
 O `base` do `vite.config.ts` é embutido no build: o `index.html` gerado aponta
 para `/MEJ-AI-INTERFACE/assets/...` em caminho **absoluto**. Servir na raiz
-devolveria 404 em todos os assets. Manter o mesmo subdiretório do GitHub Pages
-tem um bônus: a imagem se comporta como a produção.
+devolveria 404 em todos os assets. É também o subdiretório em que o servidor
+de produção publica a aplicação.
 
 ### Notas do `nginx.conf`
 
@@ -79,7 +80,9 @@ tem um bônus: a imagem se comporta como a produção.
 
 ## Deploy
 
-Automático via GitHub Actions (`.github/workflows/`) a cada push na `main`.
+Manual, no servidor do projeto, a partir da imagem Docker descrita acima. Não há
+deploy automático: um push na `main` não publica nada.
+
 O site é servido em subdiretório, então `base` no `vite.config.ts` é
 `/MEJ-AI-INTERFACE/` no build **e no preview**. Por isso os assets são sempre
 referenciados por `import`, nunca por string de caminho absoluto montada em
@@ -92,11 +95,11 @@ runtime — só assim o Vite reescreve os caminhos para o subdiretório.
 As duas seções abaixo **não são corrigíveis no front-end**. Estão registradas
 aqui para não se perderem.
 
-### 1. CORS — bloqueio ativo em produção
+### 1. CORS
 
-Em produção o front roda em `https://lemossilveira.github.io` e a API em
-`https://projetopdi.atlab.ufc.br`. As requisições falham com `Failed to fetch`
-porque o backend não devolve o cabeçalho de origem permitida.
+A API roda em `https://projetopdi.atlab.ufc.br`. Se o front for servido de outra
+origem (outro domínio, subdomínio ou porta), as requisições falham com
+`Failed to fetch` a menos que o backend devolva o cabeçalho de origem permitida.
 
 O front já está correto: usa a URL absoluta em produção e não depende do proxy
 do Vite (que só existe em dev). O erro é tratado e mostrado ao usuário em
@@ -105,7 +108,7 @@ português, com botão de "Tentar novamente", sem vazar detalhe técnico na tela
 **O backend precisa devolver:**
 
 ```
-Access-Control-Allow-Origin: https://lemossilveira.github.io
+Access-Control-Allow-Origin: <origem onde o front está hospedado>
 Access-Control-Allow-Methods: POST, OPTIONS
 Access-Control-Allow-Headers: Content-Type
 ```
@@ -117,9 +120,8 @@ segundo torna a resposta ilegível e quebraria o streaming.
 
 ### 2. Content-Security-Policy
 
-O GitHub Pages **não permite cabeçalhos HTTP customizados**, então não há como
-aplicar CSP hoje. Quando houver controle do servidor (ou um CDN à frente),
-recomenda-se:
+O `nginx.conf` já envia a CSP em modo `Report-Only` (ver "Notas do
+`nginx.conf`"). Para passar a bloquear de fato, recomenda-se:
 
 ```
 Content-Security-Policy:
