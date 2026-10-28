@@ -2,6 +2,8 @@ import type { Modelo } from '../constants/modelos'
 
 export type Role = 'user' | 'assistant'
 
+export type FeedbackType = 'up' | 'down' | null
+
 export interface Message {
   id: string
   role: Role
@@ -9,6 +11,8 @@ export interface Message {
   isStreaming?: boolean
   error?: string
   createdAt: number
+  traceId?: string
+  feedback?: FeedbackType
 }
 
 export interface Conversation {

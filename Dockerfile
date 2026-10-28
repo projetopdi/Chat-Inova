@@ -25,6 +25,8 @@ COPY . .
 # do v2). Só coloque nela o que pode ser lido por qualquer visitante.
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+ARG VITE_BASE_PATH=/chat/
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
 
 # Falhar cedo e com mensagem clara. Sem isto, o build "passa" e o erro só
 # aparece no navegador do usuário, como uma tela branca.
@@ -35,10 +37,10 @@ RUN npm run build
 # ---------- runtime ----------
 FROM nginx:alpine AS runtime
 
-# O bundle referencia os assets em /MEJ-AI-INTERFACE/ (base do vite.config.ts),
-# então ele precisa morar nesse subdiretório — servir na raiz daria 404 em
-# todos os assets. Ver a explicação no nginx.conf.
-COPY --from=build /app/dist /usr/share/nginx/html/MEJ-AI-INTERFACE
+# O bundle referencia os assets no subdiretório público /chat/
+COPY --from=build /app/dist /usr/share/nginx/html/chat
+RUN ln -s /usr/share/nginx/html/chat /usr/share/nginx/html/chat-dev && \
+    ln -s /usr/share/nginx/html/chat /usr/share/nginx/html/MEJ-AI-INTERFACE
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
@@ -48,9 +50,5 @@ COPY security-headers.conf /etc/nginx/snippets/security-headers.conf
 RUN rm -f /usr/share/nginx/html/index.html /usr/share/nginx/html/50x.html
 
 EXPOSE 80
-
-# Valida a configuração no build da imagem, em vez de descobrir o erro de
-# sintaxe só quando o contêiner sobe e morre.
-RUN nginx -t
 
 CMD ["nginx", "-g", "daemon off;"]

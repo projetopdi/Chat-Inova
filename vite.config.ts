@@ -1,23 +1,38 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig(({ command, isPreview }) => ({
-  // O servidor publica o projeto em /MEJ-AI-INTERFACE/, não na raiz do domínio.
-  // `vite preview` roda com command === 'serve'; sem incluir isPreview aqui ele
-  // serviria em '/' enquanto o index.html gerado aponta para /MEJ-AI-INTERFACE/,
-  // e o preview devolveria o fallback de SPA no lugar de cada asset — ou seja,
-  // não serviria para conferir o subdiretório, que é justamente o seu papel.
-  base: command === 'build' || isPreview ? '/MEJ-AI-INTERFACE/' : '/',
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'https://projetopdi.atlab.ufc.br/api',
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+export default defineConfig(({ command, mode, isPreview }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const backendTarget = env.VITE_BACKEND_TARGET || 'http://localhost:8000'
+  const basePath = env.VITE_BASE_PATH || '/chat/'
+
+  return {
+    // Publicação no subdiretório público (ex: /chat/).
+    // Em dev roda em '/', no build e preview utiliza o basePath configurado.
+    base: command === 'build' || isPreview ? basePath : '/',
+    plugins: [react()],
+    server: {
+      proxy: {
+        '/api': {
+          target: backendTarget,
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+        },
+        '/chat/api': {
+          target: backendTarget,
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/chat\/api/, ''),
+        },
+        '/chat-dev/api': {
+          target: backendTarget,
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/chat-dev\/api/, ''),
+        },
       },
     },
-  },
-}))
+  }
+})

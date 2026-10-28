@@ -1,21 +1,20 @@
-import { useState } from 'react'
+import type { FeedbackType } from '../../types/chat'
 import './MessageFeedback.css'
 
-type FeedbackType = 'up' | 'down' | null
+interface MessageFeedbackProps {
+  feedback?: FeedbackType
+  onFeedback?: (type: 'up' | 'down') => void
+  disabled?: boolean
+}
 
-export default function MessageFeedback() {
-  const [feedback, setFeedback] = useState<FeedbackType>(null)
-
-  const handleFeedback = (type: FeedbackType) => {
-    setFeedback((prev) => (prev === type ? null : type))
-  }
-
+export default function MessageFeedback({ feedback = null, onFeedback, disabled = false }: MessageFeedbackProps) {
   return (
     <div className="message-feedback">
       <button
         type="button"
         className={`message-feedback__btn ${feedback === 'up' ? 'message-feedback__btn--active' : ''}`}
-        onClick={() => handleFeedback('up')}
+        onClick={() => onFeedback?.('up')}
+        disabled={disabled}
         aria-label="Boa resposta"
         title="Boa resposta"
       >
@@ -28,7 +27,8 @@ export default function MessageFeedback() {
       <button
         type="button"
         className={`message-feedback__btn ${feedback === 'down' ? 'message-feedback__btn--active' : ''}`}
-        onClick={() => handleFeedback('down')}
+        onClick={() => onFeedback?.('down')}
+        disabled={disabled}
         aria-label="Resposta ruim"
         title="Resposta ruim"
       >

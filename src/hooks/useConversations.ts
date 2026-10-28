@@ -1,7 +1,7 @@
 import { useCallback, useReducer, useRef } from 'react'
-import { askStream } from '../services/api'
+import { askStream, sendFeedback, retractFeedback } from '../services/api'
 import { MODELO_PADRAO, normalizarModelo, type Modelo } from '../constants/modelos'
-import type { AppState, Conversation, Message } from '../types/chat'
+import type { AppState, Conversation, Message, FeedbackType } from '../types/chat'
 
 type Action =
   | { type: 'CREATE_CONVERSATION'; modelo: Modelo }
@@ -14,6 +14,8 @@ type Action =
   | { type: 'SET_STREAM_ERROR'; conversationId: string; messageId: string; error: string }
   | { type: 'SET_LOADING'; conversationId: string; isLoading: boolean }
   | { type: 'RESET_FOR_RETRY'; conversationId: string; messageId: string }
+  | { type: 'SET_TRACE_ID'; conversationId: string; messageId: string; traceId: string }
+  | { type: 'SET_FEEDBACK'; conversationId: string; messageId: string; feedback: FeedbackType }
   | { type: 'RENAME_CONVERSATION'; conversationId: string; title: string }
   | { type: 'DELETE_CONVERSATION'; conversationId: string }
 
@@ -158,6 +160,20 @@ function reducer(state: AppState, action: Action): AppState {
           content: '',
           isStreaming: true,
           error: undefined,
+        })),
+      )
+    case 'SET_TRACE_ID':
+      return updateConversation(state, action.conversationId, (conversation) =>
+        updateMessage(conversation, action.messageId, (message) => ({
+          ...message,
+          traceId: action.traceId,
+        })),
+      )
+    case 'SET_FEEDBACK':
+      return updateConversation(state, action.conversationId, (conversation) =>
+        updateMessage(conversation, action.messageId, (message) => ({
+          ...message,
+          feedback: action.feedback,
         })),
       )
     case 'RENAME_CONVERSATION': {
@@ -334,9 +350,17 @@ export function useConversations() {
     const modelo = modeloDaConversa(conversationId)
 
     try {
-      await askStream(modelo, trimmed, (chunk) => {
-        dispatch({ type: 'APPEND_CHUNK', conversationId, messageId: assistantId, chunk })
-      })
+      await askStream(
+        modelo,
+        trimmed,
+        (chunk) => {
+          dispatch({ type: 'APPEND_CHUNK', conversationId, messageId: assistantId, chunk })
+        },
+        conversationId,
+        (traceId) => {
+          dispatch({ type: 'SET_TRACE_ID', conversationId, messageId: assistantId, traceId })
+        },
+      )
       dispatch({ type: 'SET_STREAM_DONE', conversationId, messageId: assistantId })
     } catch (error) {
       logDetalheEmDev('falha ao enviar mensagem', error)
@@ -364,9 +388,17 @@ export function useConversations() {
     const modelo = modeloDaConversa(conversationId)
 
     try {
-      await askStream(modelo, trimmed, (chunk) => {
-        dispatch({ type: 'APPEND_CHUNK', conversationId, messageId, chunk })
-      })
+      await askStream(
+        modelo,
+        trimmed,
+        (chunk) => {
+          dispatch({ type: 'APPEND_CHUNK', conversationId, messageId, chunk })
+        },
+        conversationId,
+        (traceId) => {
+          dispatch({ type: 'SET_TRACE_ID', conversationId, messageId, traceId })
+        },
+      )
       dispatch({ type: 'SET_STREAM_DONE', conversationId, messageId })
     } catch (error) {
       logDetalheEmDev('falha ao tentar novamente', error)
@@ -381,6 +413,38 @@ export function useConversations() {
       dispatch({ type: 'SET_LOADING', conversationId, isLoading: false })
     }
   }, [modeloDaConversa])
+
+  const setFeedback = useCallback(
+    async (conversationId: string, messageId: string, type: 'up' | 'down') => {
+      const conversa = stateRef.current.conversations.find((c) => c.id === conversationId)
+      const msg = conversa?.messages.find((m) => m.id === messageId)
+      if (!msg) return
+
+      const proximoFeedback: FeedbackType = msg.feedback === type ? null : type
+
+      // Atualização otimista na interface
+      dispatch({ type: 'SET_FEEDBACK', conversationId, messageId, feedback: proximoFeedback })
+
+      const traceId = msg.traceId
+      if (!traceId) return
+
+      try {
+        if (proximoFeedback === null) {
+          await retractFeedback(traceId)
+        } else {
+          await sendFeedback({
+            trace_id: traceId,
+            is_positive: proximoFeedback === 'up',
+          })
+        }
+      } catch (error) {
+        logDetalheEmDev('falha ao registrar feedback', error)
+        // Reverte a alteração otimista se a requisição falhar
+        dispatch({ type: 'SET_FEEDBACK', conversationId, messageId, feedback: msg.feedback ?? null })
+      }
+    },
+    [],
+  )
 
   const activeConversation =
     state.conversations.find((conversation) => conversation.id === state.activeConversationId) ??
@@ -397,5 +461,6 @@ export function useConversations() {
     setDraft,
     sendMessage,
     retryMessage,
+    setFeedback,
   }
 }

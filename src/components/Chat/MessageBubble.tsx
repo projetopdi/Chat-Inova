@@ -13,7 +13,7 @@ interface MessageBubbleProps {
 }
 
 function MessageBubble({ message, conversationId, retryQuestion }: MessageBubbleProps) {
-  const { retryMessage } = useConversationsContext()
+  const { retryMessage, setFeedback } = useConversationsContext()
   const isUser = message.role === 'user'
   const isTyping = !isUser && message.isStreaming && message.content.length === 0
   const canCopy = !isUser && !message.isStreaming && !message.error
@@ -52,7 +52,10 @@ function MessageBubble({ message, conversationId, retryQuestion }: MessageBubble
       {canCopy && (
         <div className="message-bubble__actions">
           <CopyButton text={message.content} />
-          <MessageFeedback />
+          <MessageFeedback
+            feedback={message.feedback ?? null}
+            onFeedback={(type) => setFeedback(conversationId, message.id, type)}
+          />
         </div>
       )}
     </div>

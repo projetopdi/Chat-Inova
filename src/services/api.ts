@@ -45,18 +45,30 @@ export async function askStream(
   modelo: Modelo,
   pergunta: string,
   onChunk: (chunk: string) => void,
+  sessionId?: string,
+  onTraceId?: (traceId: string) => void,
 ): Promise<void> {
+  const payload: { pergunta: string; session_id?: string } = { pergunta }
+  if (sessionId) {
+    payload.session_id = sessionId
+  }
+
   const response = await fetch(`${baseURL}${ENDPOINTS[modelo]}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ pergunta }),
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
     const text = await response.text()
     throw new Error(`Erro ${response.status}: ${text}`)
+  }
+
+  const traceId = response.headers.get('x-trace-id') || response.headers.get('X-Trace-Id')
+  if (traceId && onTraceId) {
+    onTraceId(traceId)
   }
 
   if (!response.body) {
@@ -86,4 +98,20 @@ export async function askJuniorStream(
   onChunk: (chunk: string) => void,
 ): Promise<void> {
   return askStream('junior', pergunta, onChunk)
+}
+
+export interface FeedbackPayload {
+  trace_id: string
+  is_positive: boolean
+  comentario?: string
+  tags?: string[]
+  user_metadata?: Record<string, unknown>
+}
+
+export async function sendFeedback(payload: FeedbackPayload): Promise<void> {
+  await api.post('/feedback', payload)
+}
+
+export async function retractFeedback(traceId: string): Promise<void> {
+  await api.delete('/feedback', { params: { trace_id: traceId } })
 }
